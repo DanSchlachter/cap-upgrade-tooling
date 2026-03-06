@@ -1,0 +1,1262 @@
+[
+  {
+    "id": "cds9-nodejs-min-version",
+    "sourceVersion": "8.0",
+    "targetVersion": "9.0",
+    "title": "Node.js Minimum Version Raised to 20",
+    "category": "Breaking Change",
+    "severity": "high",
+    "runtime": "nodejs",
+    "description": "CAP Node.js v9 requires Node.js 20 as the minimum supported runtime. Node.js 22 (LTS) is recommended. Projects running on Node.js 18 or older will break.",
+    "actionRequired": true,
+    "applicable": true,
+    "affects": ["dependencies"],
+    "tags": ["nodejs", "runtime"],
+    "effort": "medium",
+    "affectedFiles": ["package.json", "Dockerfile", ".nvmrc"],
+    "needsRedeployment": true,
+    "steps": {
+      "admin": [
+        "Ensure all environments (development, CI/CD, production) are running Node.js version 20 or higher before upgrading to cds 9.",
+        "For new environments, use Node.js 22 LTS as the recommended version."
+      ],
+      "developer": [
+        "Update `.nvmrc` to `20` or `22`.",
+        "Update the `engines` field in `package.json`: `\"engines\": { \"node\": \">=20\" }`.",
+        "Update all Dockerfile base images to `node:20` or `node:22`.",
+        "Update CI/CD pipeline node setup steps accordingly."
+      ]
+    },
+    "autoFix": {
+      "available": false,
+      "script": null
+    },
+    "supersededBy": null,
+    "references": [
+      "https://cap.cloud.sap/docs/releases/2025/may25#cap-node-js-v9"
+    ],
+    "author": "",
+    "lastUpdated": "2026-03-06"
+  },
+  {
+    "id": "cds9-cds7-end-of-life",
+    "sourceVersion": "8.0",
+    "targetVersion": "9.0",
+    "title": "@sap/cds 7 and cds-compiler 4 Reach End of Life",
+    "category": "Removal",
+    "severity": "high",
+    "runtime": "nodejs",
+    "description": "@sap/cds 7, @sap/cds-dk 7, and @sap/cds-compiler 4 are no longer patched. Using @sap/cds 7 or lower now causes CLI errors. Projects must upgrade to @sap/cds 9.",
+    "actionRequired": true,
+    "applicable": "grep -r '\"@sap/cds\": \"7' package.json",
+    "affects": ["dependencies"],
+    "tags": ["eol", "version"],
+    "effort": "high",
+    "affectedFiles": ["package.json"],
+    "needsRedeployment": false,
+    "steps": {
+      "admin": [
+        "Projects still running cds 7 must be upgraded immediately — no further security or bug fixes will be provided for cds 7.",
+        "Contact the development team to plan the upgrade."
+      ],
+      "developer": [
+        "Run `npm install @sap/cds@9 @sap/cds-dk@9 @sap/cds-compiler@6`.",
+        "Resolve all other breaking changes listed in this guide."
+      ]
+    },
+    "autoFix": {
+      "available": true,
+      "script": "npm install @sap/cds@9 @sap/cds-dk@9 @sap/cds-compiler@6"
+    },
+    "supersededBy": null,
+    "references": [
+      "https://cap.cloud.sap/docs/releases/2025/may25#cap-node-js-v9"
+    ],
+    "author": "",
+    "lastUpdated": "2026-03-06"
+  },
+  {
+    "id": "cds9-java-eol",
+    "sourceVersion": "8.0",
+    "targetVersion": "9.0",
+    "title": "CAP Java 2.10 Reaches End of Life",
+    "category": "Removal",
+    "severity": "high",
+    "runtime": "java",
+    "description": "CAP Java (cds-services / cds4j-api) version 2.10 is no longer patched. Projects must upgrade to CAP Java 4.0 for continued support.",
+    "actionRequired": true,
+    "applicable": "grep -r 'cds-services-bom' pom.xml",
+    "affects": ["dependencies"],
+    "tags": ["eol", "java"],
+    "effort": "high",
+    "affectedFiles": ["pom.xml"],
+    "needsRedeployment": false,
+    "steps": {
+      "admin": [
+        "Update the CAP Java BOM version in your pom.xml to 4.0.x before the next deployment. No security patches will be delivered for version 2.10.",
+        "Schedule the upgrade with your development team."
+      ],
+      "developer": [
+        "Update the Maven BOM `com.sap.cds:cds-services-bom` to version `4.0.x` in `pom.xml`.",
+        "Follow the full Java migration guide at https://cap.cloud.sap/docs/java/migration#three-to-four."
+      ]
+    },
+    "autoFix": {
+      "available": false,
+      "script": null
+    },
+    "supersededBy": null,
+    "references": [
+      "https://cap.cloud.sap/docs/releases/2025/may25#cap-java-v4",
+      "https://cap.cloud.sap/docs/java/migration#three-to-four"
+    ],
+    "author": "",
+    "lastUpdated": "2026-03-06"
+  },
+  {
+    "id": "cds9-event-queues-by-default",
+    "sourceVersion": "8.0",
+    "targetVersion": "9.0",
+    "title": "Transactional Event Queues Enabled by Default",
+    "category": "Breaking Change",
+    "severity": "high",
+    "runtime": "both",
+    "description": "The transactional event queue feature (evolution of the persistent outbox) is now active by default in both Node.js and Java. A new database table `cds.outbox.Messages` must be deployed. If the persistent outbox was not previously used, skipping deployment will cause runtime failures.",
+    "actionRequired": true,
+    "applicable": true,
+    "affects": ["database", "messaging"],
+    "tags": ["messaging", "outbox", "database"],
+    "effort": "low",
+    "affectedFiles": [],
+    "needsRedeployment": true,
+    "steps": {
+      "admin": [
+        "A database deployment is required after upgrading to cds 9 / CAP Java 4. The new `cds.outbox.Messages` table must be created before the application starts.",
+        "If event queues are causing issues, ask a developer to temporarily disable them by setting `cds.requires.queue = false` in the project configuration."
+      ],
+      "developer": [
+        "Run a full database deployment after upgrading — the new `cds.outbox.Messages` table must exist.",
+        "To temporarily opt out, set `cds.requires.queue = false` in `package.json` (Node.js) or `application.properties` (Java). Remove this setting once deployment is complete.",
+        "The old `cds.outboxed(srv)` is kept as a synonym for the new `cds.queued(srv)`.",
+        "The table name remains `cds.outbox.Messages` for compatibility."
+      ]
+    },
+    "autoFix": {
+      "available": false,
+      "script": null
+    },
+    "supersededBy": null,
+    "references": [
+      "https://cap.cloud.sap/docs/releases/2025/may25#enabled-by-default",
+      "https://cap.cloud.sap/docs/guides/messaging/task-queues"
+    ],
+    "author": "",
+    "lastUpdated": "2026-03-06"
+  },
+  {
+    "id": "cds9-association-to-many-without-on",
+    "sourceVersion": "8.0",
+    "targetVersion": "9.0",
+    "title": "Association to Many Without ON Condition Now an Error",
+    "category": "Breaking Change",
+    "severity": "high",
+    "runtime": "both",
+    "description": "`Association to many` without an ON condition was previously silently compiled as a managed `to one` association, generating foreign keys. It is now treated as unspecified, causing a compiler error. Existing models with this pattern must be fixed before deployment.",
+    "actionRequired": true,
+    "applicable": "grep -rn 'Association to many' .",
+    "affects": ["data-model", "database"],
+    "tags": ["cds-model", "associations"],
+    "effort": "medium",
+    "affectedFiles": ["**/*.cds"],
+    "needsRedeployment": true,
+    "steps": {
+      "admin": [
+        "After the development team fixes the data model, a schema migration/deployment is required. The spurious foreign key column generated by the old behavior may need to be removed from the database."
+      ],
+      "developer": [
+        "Search for `Association to many` without an ON condition in all `.cds` files.",
+        "If you intended `to many`: add an ON condition — e.g. `books: Association to many Books on books.author = $self;`.",
+        "If you intended a managed `to one`: remove the `many` — e.g. `book: Association to Books;`.",
+        "If intentionally unspecified: ensure the entity is not deployed to the database and implement a custom handler.",
+        "Run `cds build` to verify no compiler errors remain."
+      ]
+    },
+    "autoFix": {
+      "available": false,
+      "script": null
+    },
+    "supersededBy": null,
+    "references": [
+      "https://cap.cloud.sap/docs/releases/2025/may25#unspecified-assoc"
+    ],
+    "author": "",
+    "lastUpdated": "2026-03-06"
+  },
+  {
+    "id": "cds9-now-transaction-time",
+    "sourceVersion": "8.0",
+    "targetVersion": "9.0",
+    "title": "$now Maps to Transaction Time Instead of current_timestamp",
+    "category": "Behavior Change",
+    "severity": "medium",
+    "runtime": "both",
+    "description": "`$now` in CDS models now translates to `session_context($now)` (CAP-pinned UTC transaction time) instead of `current_timestamp` (database-server time). Exception: in `default` clauses, `$now` still maps to `current_timestamp`. This can affect stored timestamp values.",
+    "actionRequired": true,
+    "applicable": "grep -rn '\\$now' . --include='*.cds'",
+    "affects": ["data-model", "database"],
+    "tags": ["timestamps", "cds-model"],
+    "effort": "low",
+    "affectedFiles": ["**/*.cds"],
+    "needsRedeployment": true,
+    "steps": {
+      "admin": [
+        "Verify that timestamp-dependent data and reports are not affected by the switch from database-server time to CAP-pinned UTC transaction time.",
+        "Check any scheduled jobs or integrations that compare or sort by timestamp fields."
+      ],
+      "developer": [
+        "If you require the old database-server time behavior, replace `$now` with `current_timestamp` explicitly in your CDS model definitions.",
+        "Views using `$now` will be regenerated — plan a redeployment."
+      ]
+    },
+    "autoFix": {
+      "available": false,
+      "script": null
+    },
+    "supersededBy": null,
+    "references": [
+      "https://cap.cloud.sap/docs/releases/2025/may25#now-is-transaction-time"
+    ],
+    "author": "",
+    "lastUpdated": "2026-03-06"
+  },
+  {
+    "id": "cds9-not-equal-two-valued-logic",
+    "sourceVersion": "8.0",
+    "targetVersion": "9.0",
+    "title": "!= Operator Changed to Two-Valued Logic",
+    "category": "Behavior Change",
+    "severity": "medium",
+    "runtime": "both",
+    "description": "The `!=` operator now uses two-valued Boolean logic (always `true` or `false`, never `null`). Previously it had SQL three-valued logic where comparing with `null` yielded `null`. This can silently change query results where null values are involved.",
+    "actionRequired": true,
+    "applicable": "grep -rn '!=' . --include='*.cds'",
+    "affects": ["data-model", "database", "custom-handlers"],
+    "tags": ["cds-model", "queries"],
+    "effort": "medium",
+    "affectedFiles": ["**/*.cds"],
+    "needsRedeployment": false,
+    "steps": {
+      "admin": [
+        "Test all query-heavy functionality where null values may exist in filtered fields after upgrading."
+      ],
+      "developer": [
+        "Review all CDS model filters, annotations with expression values, and CQN queries using `!=`.",
+        "If three-valued SQL logic is required, switch to `<>` instead.",
+        "Note: the `==` operator also follows two-valued logic (equivalent to `IS NOT DISTINCT FROM`)."
+      ]
+    },
+    "autoFix": {
+      "available": false,
+      "script": null
+    },
+    "supersededBy": null,
+    "references": [
+      "https://cap.cloud.sap/docs/releases/2025/may25#consistent-operators"
+    ],
+    "author": "",
+    "lastUpdated": "2026-03-06"
+  },
+  {
+    "id": "cds9-persistence-journal-propagation",
+    "sourceVersion": "8.0",
+    "targetVersion": "9.0",
+    "title": "@cds.persistence.journal Propagates to Generated .texts and Child Entities",
+    "category": "Breaking Change",
+    "severity": "high",
+    "runtime": "both",
+    "description": "When an entity is annotated with `@cds.persistence.journal`, its compiler-generated `.texts` entities and composition child entities now inherit this annotation. These tables will be deployed via `.hdbmigrationtable` instead of `.hdbtable`. Undeploy the `.hdbtable` and deploy `.hdbmigrationtable` in the same HDI deployment step to avoid data loss.",
+    "actionRequired": true,
+    "applicable": "grep -rn '@cds.persistence.journal' . --include='*.cds'",
+    "affects": ["database", "data-model"],
+    "tags": ["hana", "schema-migration"],
+    "effort": "high",
+    "affectedFiles": ["**/*.cds"],
+    "needsRedeployment": true,
+    "steps": {
+      "admin": [
+        "Coordinate the migration deployment carefully with the development team — dropping `.hdbtable` and creating `.hdbmigrationtable` must happen in the same HDI deployment to avoid data loss.",
+        "Schedule a deployment window for this change."
+      ],
+      "developer": [
+        "If you do NOT want child/text entities to inherit the annotation, explicitly annotate them with `@cds.persistence.journal: false`, e.g. `annotate Books.chapters with @cds.persistence.journal: false;`.",
+        "Plan and execute the migration deployment in a single HDI deployment step — undeploy `.hdbtable` and deploy `.hdbmigrationtable` together."
+      ]
+    },
+    "autoFix": {
+      "available": false,
+      "script": null
+    },
+    "supersededBy": null,
+    "references": [
+      "https://cap.cloud.sap/docs/releases/2025/may25#generated-entities-and-cds-persistence-journal"
+    ],
+    "author": "",
+    "lastUpdated": "2026-03-06"
+  },
+  {
+    "id": "cds9-hdbcds-format-removed",
+    "sourceVersion": "8.0",
+    "targetVersion": "9.0",
+    "title": "hdbcds SAP HANA Deploy Format Removed",
+    "category": "Removal",
+    "severity": "high",
+    "runtime": "nodejs",
+    "description": "The `hdbcds` deploy format for SAP HANA was deprecated in cds 8 and is now completely removed. Projects still using this format will fail to deploy. The replacement is the `hdbtable` format (default). Not relevant for SAP HANA Cloud.",
+    "actionRequired": true,
+    "applicable": "grep -rn 'hdbcds' . --include='*.json'",
+    "affects": ["database"],
+    "tags": ["hana", "deploy-format"],
+    "effort": "high",
+    "affectedFiles": ["package.json", "**/.cdsrc.json"],
+    "needsRedeployment": true,
+    "steps": {
+      "admin": [
+        "Migration from `.hdbcds` to `.hdbtable` requires a planned schema migration. Schedule a maintenance window with the development team."
+      ],
+      "developer": [
+        "Follow the migration guide at https://cap.cloud.sap/docs/cds/compiler/hdbcds-to-hdbtable.",
+        "Switch the deploy format to `hdbtable` in your project configuration.",
+        "Run the schema migration as documented."
+      ]
+    },
+    "autoFix": {
+      "available": false,
+      "script": null
+    },
+    "supersededBy": null,
+    "references": [
+      "https://cap.cloud.sap/docs/releases/2025/may25#removed-hdbcds-format"
+    ],
+    "author": "",
+    "lastUpdated": "2026-03-06"
+  },
+  {
+    "id": "cds9-hana-no-native-associations",
+    "sourceVersion": "8.0",
+    "targetVersion": "9.0",
+    "title": "Native HANA Associations No Longer Generated",
+    "category": "Behavior Change",
+    "severity": "medium",
+    "runtime": "nodejs",
+    "description": "CDS associations are no longer reflected as native HANA `WITH ASSOCIATIONS` clauses in tables and views. This reduces ongoing deployment times, but the first deployment after upgrading to cds 9 will be longer than usual as every entity with associations is touched.",
+    "actionRequired": true,
+    "applicable": true,
+    "affects": ["database"],
+    "tags": ["hana", "associations"],
+    "effort": "low",
+    "affectedFiles": [],
+    "needsRedeployment": true,
+    "steps": {
+      "admin": [
+        "Plan for a longer-than-normal first deployment after upgrading to cds 9. Subsequent deployments will be faster.",
+        "Ensure sufficient deployment window time for the initial migration."
+      ],
+      "developer": [
+        "No action required for most projects — the change is automatic.",
+        "If native HANA associations are required by custom native HANA objects, re-enable with `cds.sql.native_hana_associations: true` in your config."
+      ]
+    },
+    "autoFix": {
+      "available": false,
+      "script": null
+    },
+    "supersededBy": null,
+    "references": [
+      "https://cap.cloud.sap/docs/releases/2025/may25#skipped-native-associations-for-sap-hana"
+    ],
+    "author": "",
+    "lastUpdated": "2026-03-06"
+  },
+  {
+    "id": "cds9-req-params-always-object-array",
+    "sourceVersion": "8.0",
+    "targetVersion": "9.0",
+    "title": "req.params Always Returns Array of Objects",
+    "category": "Breaking Change",
+    "severity": "high",
+    "runtime": "nodejs",
+    "description": "`req.params` now always returns an array of plain objects (e.g. `[{ ID: 101 }]`), even for entities with a single key. Previously a single-key entity returned the primitive value directly (e.g. `101`). Any custom handler code accessing `req.params[0]` as a scalar will break.",
+    "actionRequired": true,
+    "applicable": "grep -rn 'req.params' . --include='*.js' --include='*.ts'",
+    "affects": ["custom-handlers"],
+    "tags": ["handlers", "api"],
+    "effort": "medium",
+    "affectedFiles": ["**/*.js", "**/*.ts"],
+    "needsRedeployment": false,
+    "steps": {
+      "admin": [
+        "No action required from administrators. Ask developers to review and update custom handler code."
+      ],
+      "developer": [
+        "Update all custom handlers that access `req.params`. Change `const id = req.params[0]` to `const { ID } = req.params[0]`.",
+        "To temporarily opt out while fixing: set `cds.features.consistent_params = false` in your config.",
+        "Search for all usages: `grep -rn 'req.params' . --include='*.js' --include='*.ts'`"
+      ]
+    },
+    "autoFix": {
+      "available": false,
+      "script": null
+    },
+    "supersededBy": null,
+    "references": [
+      "https://cap.cloud.sap/docs/releases/2025/may25#changed-structure-of-req-params"
+    ],
+    "author": "",
+    "lastUpdated": "2026-03-06"
+  },
+  {
+    "id": "cds9-service-level-restrictions",
+    "sourceVersion": "8.0",
+    "targetVersion": "9.0",
+    "title": "@requires Annotation Now Enforced for Local Service Calls",
+    "category": "Breaking Change",
+    "severity": "high",
+    "runtime": "nodejs",
+    "description": "Local (in-process) calls to application services that do not satisfy the service's `@requires` annotation are now rejected with a 403. Previously, local calls bypassed service-level authorization. This can break internal service-to-service calls within the same process.",
+    "actionRequired": true,
+    "applicable": "grep -rn '@requires' . --include='*.cds'",
+    "affects": ["auth", "custom-handlers"],
+    "tags": ["authorization", "security"],
+    "effort": "medium",
+    "affectedFiles": ["**/*.cds", "**/*.js", "**/*.ts"],
+    "needsRedeployment": false,
+    "steps": {
+      "admin": [
+        "No direct action required from administrators. Ask developers to review internal service call authorization."
+      ],
+      "developer": [
+        "Use the privileged user for trusted internal calls that should bypass `@requires`: https://cap.cloud.sap/docs/node.js/authentication#privileged-user.",
+        "To temporarily opt out while fixing: set `cds.features.service_level_restrictions = false` in your config.",
+        "Review all in-process service calls that could be affected."
+      ]
+    },
+    "autoFix": {
+      "available": false,
+      "script": null
+    },
+    "supersededBy": null,
+    "references": [
+      "https://cap.cloud.sap/docs/releases/2025/may25#service-level-restrictions"
+    ],
+    "author": "",
+    "lastUpdated": "2026-03-06"
+  },
+  {
+    "id": "cds9-cap-js-db-packages-v2",
+    "sourceVersion": "8.0",
+    "targetVersion": "9.0",
+    "title": "@cap-js Database Packages Must Be Upgraded to v2",
+    "category": "Breaking Change",
+    "severity": "high",
+    "runtime": "nodejs",
+    "description": "cds 9 requires major version 2 of all `@cap-js` database service packages (`@cap-js/sqlite`, `@cap-js/hana`, `@cap-js/postgres`). Additionally, violated unique constraints are no longer automatically mapped to `ENTITY_ALREADY_EXISTS` or `UNIQUE_CONSTRAINT_VIOLATION` — they are now raw database errors.",
+    "actionRequired": true,
+    "applicable": "grep -rn '@cap-js' package.json",
+    "affects": ["database", "custom-handlers"],
+    "tags": ["database", "dependencies"],
+    "effort": "medium",
+    "affectedFiles": ["package.json"],
+    "needsRedeployment": false,
+    "steps": {
+      "admin": [
+        "No direct action required from administrators. Ask developers to update database package versions."
+      ],
+      "developer": [
+        "Run `npm install @cap-js/sqlite@2` and/or `npm install @cap-js/hana@2` and/or `npm install @cap-js/postgres@2` as applicable.",
+        "Review any custom error handling code that relied on `ENTITY_ALREADY_EXISTS` or `UNIQUE_CONSTRAINT_VIOLATION` error codes for unique constraint violations — these must now inspect raw database errors."
+      ]
+    },
+    "autoFix": {
+      "available": true,
+      "script": "npm install @cap-js/sqlite@2 @cap-js/hana@2 @cap-js/postgres@2"
+    },
+    "supersededBy": null,
+    "references": [
+      "https://cap.cloud.sap/docs/releases/2025/may25#new-database-services-v2"
+    ],
+    "author": "",
+    "lastUpdated": "2026-03-06"
+  },
+  {
+    "id": "cds9-legacy-db-services-removed",
+    "sourceVersion": "8.0",
+    "targetVersion": "9.0",
+    "title": "Legacy Built-in Database Services Removed",
+    "category": "Removal",
+    "severity": "high",
+    "runtime": "nodejs",
+    "description": "The old built-in database services, deprecated since cds 8, are completely removed. Projects must use the `@cap-js/*` database service packages.",
+    "actionRequired": true,
+    "applicable": true,
+    "affects": ["database", "dependencies"],
+    "tags": ["database", "dependencies"],
+    "effort": "medium",
+    "affectedFiles": ["package.json"],
+    "needsRedeployment": false,
+    "steps": {
+      "admin": [
+        "No direct action required from administrators. Ask developers to update dependencies."
+      ],
+      "developer": [
+        "Install the appropriate `@cap-js` database package: `npm install @cap-js/sqlite`, `npm install @cap-js/hana`, or `npm install @cap-js/postgres`.",
+        "See https://github.com/cap-js/cds-dbs for details."
+      ]
+    },
+    "autoFix": {
+      "available": false,
+      "script": null
+    },
+    "supersededBy": null,
+    "references": [
+      "https://cap.cloud.sap/docs/releases/2025/may25#removed-features"
+    ],
+    "author": "",
+    "lastUpdated": "2026-03-06"
+  },
+  {
+    "id": "cds9-cds-hana-package-removed",
+    "sourceVersion": "8.0",
+    "targetVersion": "9.0",
+    "title": "@sap/cds-hana Package Removed — Replace with @cap-js/hana",
+    "category": "Removal",
+    "severity": "high",
+    "runtime": "nodejs",
+    "description": "The `@sap/cds-hana` package has been removed. The replacement is `@cap-js/hana`.",
+    "actionRequired": true,
+    "applicable": "grep -rn '@sap/cds-hana' package.json",
+    "affects": ["database", "dependencies"],
+    "tags": ["hana", "dependencies"],
+    "effort": "low",
+    "affectedFiles": ["package.json"],
+    "needsRedeployment": false,
+    "steps": {
+      "admin": [
+        "No direct action required from administrators. Ask developers to update the dependency."
+      ],
+      "developer": [
+        "Run `npm rm @sap/cds-hana && npm add @cap-js/hana`.",
+        "Update any explicit imports of `@sap/cds-hana` in code to `@cap-js/hana`."
+      ]
+    },
+    "autoFix": {
+      "available": true,
+      "script": "npm rm @sap/cds-hana && npm add @cap-js/hana"
+    },
+    "supersededBy": null,
+    "references": [
+      "https://cap.cloud.sap/docs/releases/2025/may25#removed-features"
+    ],
+    "author": "",
+    "lastUpdated": "2026-03-06"
+  },
+  {
+    "id": "cds9-cloud-sdk-v3-removed",
+    "sourceVersion": "8.0",
+    "targetVersion": "9.0",
+    "title": "Support for SAP Cloud SDK v3 Removed",
+    "category": "Removal",
+    "severity": "high",
+    "runtime": "nodejs",
+    "description": "CAP Node.js no longer supports SAP Cloud SDK v3. The minimum required version is v4. Projects using the Cloud SDK for remote service calls or integrations must upgrade.",
+    "actionRequired": true,
+    "applicable": "grep -rn '@sap-cloud-sdk' package.json",
+    "affects": ["dependencies"],
+    "tags": ["cloud-sdk", "dependencies"],
+    "effort": "medium",
+    "affectedFiles": ["package.json"],
+    "needsRedeployment": false,
+    "steps": {
+      "admin": [
+        "No direct action required from administrators. Ask developers to upgrade the SAP Cloud SDK."
+      ],
+      "developer": [
+        "Upgrade to `@sap-cloud-sdk` v4 following the V4 Upgrade Guide: https://github.com/SAP/cloud-sdk-js/blob/main/V4-Upgrade-Guide.md."
+      ]
+    },
+    "autoFix": {
+      "available": false,
+      "script": null
+    },
+    "supersededBy": null,
+    "references": [
+      "https://cap.cloud.sap/docs/releases/2025/may25#removed-features"
+    ],
+    "author": "",
+    "lastUpdated": "2026-03-06"
+  },
+  {
+    "id": "cds9-xssec-v3-removed",
+    "sourceVersion": "8.0",
+    "targetVersion": "9.0",
+    "title": "Support for @sap/xssec v3 Removed",
+    "category": "Removal",
+    "severity": "high",
+    "runtime": "nodejs",
+    "description": "CAP Node.js no longer supports `@sap/xssec` v3. The security library must be upgraded to v4.",
+    "actionRequired": true,
+    "applicable": "grep -rn '@sap/xssec' package.json",
+    "affects": ["auth", "dependencies"],
+    "tags": ["security", "xsuaa"],
+    "effort": "low",
+    "affectedFiles": ["package.json"],
+    "needsRedeployment": false,
+    "steps": {
+      "admin": [
+        "No direct action required from administrators. Ask developers to upgrade the security library."
+      ],
+      "developer": [
+        "Run `npm install @sap/xssec@4`.",
+        "Review the xssec v4 changelog for any API-level breaking changes."
+      ]
+    },
+    "autoFix": {
+      "available": true,
+      "script": "npm install @sap/xssec@4"
+    },
+    "supersededBy": null,
+    "references": [
+      "https://cap.cloud.sap/docs/releases/2025/may25#removed-features"
+    ],
+    "author": "",
+    "lastUpdated": "2026-03-06"
+  },
+  {
+    "id": "cds9-cds-test-moved",
+    "sourceVersion": "8.0",
+    "targetVersion": "9.0",
+    "title": "cds.test Moved to Separate Package @cap-js/cds-test",
+    "category": "Breaking Change",
+    "severity": "medium",
+    "runtime": "nodejs",
+    "description": "The CAP Node.js test support library has been extracted to a separate open-source package `@cap-js/cds-test`. Tests using `cds.test` will fail unless the new package is installed. The new package bundles `axios`, `chai`, `chai-subset`, and `chai-as-promised` — these no longer need to be managed separately.",
+    "actionRequired": true,
+    "applicable": "grep -rn 'cds.test' . --include='*.js' --include='*.ts'",
+    "affects": ["dependencies"],
+    "tags": ["testing", "dependencies"],
+    "effort": "low",
+    "affectedFiles": ["package.json"],
+    "needsRedeployment": false,
+    "steps": {
+      "admin": [
+        "No action required from administrators."
+      ],
+      "developer": [
+        "Run `npm add -D @cap-js/cds-test`.",
+        "Run `npm rm axios chai chai-subset chai-as-promised` to remove now-redundant dependencies.",
+        "Update any test files that import directly from the old location."
+      ]
+    },
+    "autoFix": {
+      "available": true,
+      "script": "npm add -D @cap-js/cds-test && npm rm axios chai chai-subset chai-as-promised"
+    },
+    "supersededBy": null,
+    "references": [
+      "https://cap.cloud.sap/docs/releases/2025/may25#open-sourced-cds-test"
+    ],
+    "author": "",
+    "lastUpdated": "2026-03-06"
+  },
+  {
+    "id": "cds9-patch-upsert-behavior-changed",
+    "sourceVersion": "8.0",
+    "targetVersion": "9.0",
+    "title": "PATCH No Longer Upserts by Default",
+    "category": "Behavior Change",
+    "severity": "medium",
+    "runtime": "nodejs",
+    "description": "In cds 8, PATCH and PUT both created the resource if it didn't exist. In cds 9, this is split into separate flags. `patch_as_upsert` now defaults to `false`, meaning PATCH no longer creates missing resources. Code relying on PATCH creating a missing resource will now get a 404.",
+    "actionRequired": true,
+    "applicable": true,
+    "affects": ["rest", "odata", "custom-handlers"],
+    "tags": ["odata", "rest", "upsert"],
+    "effort": "medium",
+    "affectedFiles": ["**/*.js", "**/*.ts"],
+    "needsRedeployment": false,
+    "steps": {
+      "admin": [
+        "No direct action required from administrators. Ask developers to review API behavior changes."
+      ],
+      "developer": [
+        "If PATCH-as-upsert is needed, set `cds.runtime.patch_as_upsert = true` in your config.",
+        "Remove any references to the old `cds.runtime.allow_upsert`.",
+        "Review code and tests that assume PATCH creates missing resources — these will now get a 404."
+      ]
+    },
+    "autoFix": {
+      "available": false,
+      "script": null
+    },
+    "supersededBy": null,
+    "references": [
+      "https://cap.cloud.sap/docs/releases/2025/may25#revised-handling-of-put-requests"
+    ],
+    "author": "",
+    "lastUpdated": "2026-03-06"
+  },
+  {
+    "id": "cds9-locale-fallback-removed",
+    "sourceVersion": "8.0",
+    "targetVersion": "9.0",
+    "title": "No Locale Fallback for Requests Without Accept-Language Header",
+    "category": "Behavior Change",
+    "severity": "medium",
+    "runtime": "nodejs",
+    "description": "`cds.context.locale` no longer falls back to the configured default language when no `Accept-Language` header is present (typical for technical/API calls). Data will be un-localized for such requests. Applications relying on default-language localization for technical API consumers will be affected.",
+    "actionRequired": true,
+    "applicable": true,
+    "affects": ["rest", "odata", "custom-handlers"],
+    "tags": ["i18n", "localization"],
+    "effort": "low",
+    "affectedFiles": [],
+    "needsRedeployment": false,
+    "steps": {
+      "admin": [
+        "Verify that API consumers (integrations, batch jobs) that do not send an `Accept-Language` header still receive the expected data."
+      ],
+      "developer": [
+        "Have API consumers send an explicit `Accept-Language` header if default-language content is required.",
+        "To temporarily restore the old behavior: set `cds.features.locale_fallback = true` in your config."
+      ]
+    },
+    "autoFix": {
+      "available": false,
+      "script": null
+    },
+    "supersededBy": null,
+    "references": [
+      "https://cap.cloud.sap/docs/releases/2025/may25#no-fallback-to-default-language-for-technical-apis"
+    ],
+    "author": "",
+    "lastUpdated": "2026-03-06"
+  },
+  {
+    "id": "cds9-insert-as-removed",
+    "sourceVersion": "8.0",
+    "targetVersion": "9.0",
+    "title": "INSERT.as() Query Builder Method Removed",
+    "category": "Removal",
+    "severity": "medium",
+    "runtime": "nodejs",
+    "description": "The `INSERT.as` method has been removed from the CDS query builder API.",
+    "actionRequired": true,
+    "applicable": "grep -rn 'INSERT.as' . --include='*.js' --include='*.ts'",
+    "affects": ["custom-handlers"],
+    "tags": ["cql", "api"],
+    "effort": "low",
+    "affectedFiles": ["**/*.js", "**/*.ts"],
+    "needsRedeployment": false,
+    "steps": {
+      "admin": [
+        "No action required from administrators."
+      ],
+      "developer": [
+        "Replace `INSERT.as(...)` with `INSERT.entries(...)` or `INSERT.from(...)` as documented in the CDS Query Language reference."
+      ]
+    },
+    "autoFix": {
+      "available": false,
+      "script": null
+    },
+    "supersededBy": null,
+    "references": [
+      "https://cap.cloud.sap/docs/releases/2025/may25#removed-features"
+    ],
+    "author": "",
+    "lastUpdated": "2026-03-06"
+  },
+  {
+    "id": "cds9-srv-impl-with-removed",
+    "sourceVersion": "8.0",
+    "targetVersion": "9.0",
+    "title": "srv.impl() and srv.with() Methods Removed",
+    "category": "Removal",
+    "severity": "medium",
+    "runtime": "nodejs",
+    "description": "The `srv.impl()` and `srv.with()` methods for registering service implementations have been removed.",
+    "actionRequired": true,
+    "applicable": "grep -rn 'srv\\.impl\\|srv\\.with' . --include='*.js' --include='*.ts'",
+    "affects": ["custom-handlers"],
+    "tags": ["api", "handlers"],
+    "effort": "low",
+    "affectedFiles": ["**/*.js", "**/*.ts"],
+    "needsRedeployment": false,
+    "steps": {
+      "admin": [
+        "No action required from administrators."
+      ],
+      "developer": [
+        "Replace all usages of `srv.impl(...)` and `srv.with(...)` with `srv.prepend(...)` as documented in the Node.js core services reference."
+      ]
+    },
+    "autoFix": {
+      "available": false,
+      "script": null
+    },
+    "supersededBy": null,
+    "references": [
+      "https://cap.cloud.sap/docs/releases/2025/may25#removed-features"
+    ],
+    "author": "",
+    "lastUpdated": "2026-03-06"
+  },
+  {
+    "id": "cds9-mtx-config-removed",
+    "sourceVersion": "8.0",
+    "targetVersion": "9.0",
+    "title": "cds.mtx Configuration Namespace and Legacy Extensibility Keys Removed",
+    "category": "Removal",
+    "severity": "high",
+    "runtime": "nodejs",
+    "description": "The `cds.mtx` configuration block is no longer supported. Additionally, legacy extensibility configuration keys (`entity-whitelist`, `service-whitelist`, `namespace-blacklist`) will now cause a hard error at startup.",
+    "actionRequired": true,
+    "applicable": "grep -rn 'cds.mtx\\|entity-whitelist\\|service-whitelist\\|namespace-blacklist' . --include='*.json' --include='*.yaml'",
+    "affects": ["multitenancy", "configuration"],
+    "tags": ["mtx", "multitenancy", "extensibility"],
+    "effort": "medium",
+    "affectedFiles": ["package.json", "**/.cdsrc.json"],
+    "needsRedeployment": false,
+    "steps": {
+      "admin": [
+        "Update all environment configurations that reference `cds.mtx` — these will cause the application to fail at startup.",
+        "Coordinate with the development team to identify replacement configuration keys."
+      ],
+      "developer": [
+        "Migrate from `cds.mtx` to the Extensibility Service Configuration namespace: https://cap.cloud.sap/docs/guides/multitenancy/mtxs#extensibility-config.",
+        "Remove any `entity-whitelist`, `service-whitelist`, or `namespace-blacklist` entries from configuration."
+      ]
+    },
+    "autoFix": {
+      "available": false,
+      "script": null
+    },
+    "supersededBy": null,
+    "references": [
+      "https://cap.cloud.sap/docs/releases/2025/may25#changes-in-multitenancy"
+    ],
+    "author": "",
+    "lastUpdated": "2026-03-06"
+  },
+  {
+    "id": "cds9-eslint9-required",
+    "sourceVersion": "8.0",
+    "targetVersion": "9.0",
+    "title": "ESLint 9 Required for @sap/eslint-plugin-cds",
+    "category": "Breaking Change",
+    "severity": "medium",
+    "runtime": "nodejs",
+    "description": "`@sap/eslint-plugin-cds` v4 requires ESLint 9. ESLint 8 configurations will not work. Additionally, `cds lint` no longer bundles `eslint` — it must be installed as an explicit devDependency.",
+    "actionRequired": true,
+    "applicable": "grep -rn 'eslint-plugin-cds' package.json",
+    "affects": ["dependencies"],
+    "tags": ["eslint", "tooling"],
+    "effort": "medium",
+    "affectedFiles": ["package.json", "eslint.config.*", ".eslintrc.*"],
+    "needsRedeployment": false,
+    "steps": {
+      "admin": [
+        "No action required from administrators."
+      ],
+      "developer": [
+        "Run `npm add -D eslint`.",
+        "Migrate ESLint configuration from v8 format to v9 flat config format: https://eslint.org/docs/latest/use/migrate-to-9.0.0.",
+        "Update `@sap/eslint-plugin-cds` to v4."
+      ]
+    },
+    "autoFix": {
+      "available": true,
+      "script": "npm add -D eslint@9 @sap/eslint-plugin-cds@4"
+    },
+    "supersededBy": null,
+    "references": [
+      "https://cap.cloud.sap/docs/releases/2025/may25#eslint-9-required"
+    ],
+    "author": "",
+    "lastUpdated": "2026-03-06"
+  },
+  {
+    "id": "cds9-java-deep-auth-by-default",
+    "sourceVersion": "8.0",
+    "targetVersion": "9.0",
+    "title": "Java: Deep Authorization Checks Enabled by Default",
+    "category": "Breaking Change",
+    "severity": "high",
+    "runtime": "java",
+    "description": "Three advanced instance-based authorization features are now enabled by default in CAP Java 4: (1) `authorization.deep` checks authorizations deeply through associations, (2) `rejectSelectedUnauthorizedEntity` returns 403 instead of 404 for unauthorized access, (3) `checkInputData` validates authorization on write payloads. Previously-passing requests may now be rejected.",
+    "actionRequired": true,
+    "applicable": true,
+    "affects": ["auth"],
+    "tags": ["authorization", "security", "java"],
+    "effort": "high",
+    "affectedFiles": ["**/*.java", "application.properties", "application.yaml"],
+    "needsRedeployment": true,
+    "steps": {
+      "admin": [
+        "Test all authorization-sensitive operations thoroughly before upgrading in production.",
+        "Users or roles that previously could access nested data without explicit authorization may now receive 403 errors.",
+        "Update role assignments and inform end users if error messages change (404 → 403 for unauthorized access)."
+      ],
+      "developer": [
+        "Review all CDS service and entity definitions for deep associations — ensure `@requires` and `@restrict` annotations correctly cover all navigation paths.",
+        "Re-test all CREATE/UPDATE/UPSERT operations for entities with instance-based `@restrict` conditions.",
+        "To pre-test in cds-services 3.10.x, enable the flags manually before upgrading.",
+        "If needed, temporarily disable individual features: `cds.security.authorization.deep.enabled=false`, `cds.security.authorization.instanceBased.rejectSelectedUnauthorizedEntity.enabled=false`, `cds.security.authorization.instanceBased.checkInputData.enabled=false`.",
+        "Refer to https://cap.cloud.sap/docs/guides/security/authorization#deep-auth."
+      ]
+    },
+    "autoFix": {
+      "available": false,
+      "script": null
+    },
+    "supersededBy": null,
+    "references": [
+      "https://cap.cloud.sap/docs/java/migration#adjusted-property-defaults",
+      "https://cap.cloud.sap/docs/guides/security/authorization#deep-auth"
+    ],
+    "author": "",
+    "lastUpdated": "2026-03-06"
+  },
+  {
+    "id": "cds9-java-unstructured-messaging-removed",
+    "sourceVersion": "8.0",
+    "targetVersion": "9.0",
+    "title": "Java: Unstructured String Messaging Support Removed",
+    "category": "Removal",
+    "severity": "high",
+    "runtime": "java",
+    "description": "The `cds.messaging.services.<key>.structured` property (which when `false` allowed raw string messages) is fully removed. MessagingService now always uses structured Map-based messages. The APIs `MessagingService.emit(String, String)` and `TopicMessageEventContext.getData()` are removed. Incoming unstructured strings are wrapped as `Map.of(\"message\", <theString>)`.",
+    "actionRequired": true,
+    "applicable": "grep -rn 'structured' src/main/resources/application",
+    "affects": ["messaging"],
+    "tags": ["messaging", "java", "api"],
+    "effort": "medium",
+    "affectedFiles": ["application.properties", "application.yaml", "**/*.java"],
+    "needsRedeployment": true,
+    "steps": {
+      "admin": [
+        "Remove the `cds.messaging.services.<key>.structured` property from all environment configurations.",
+        "Coordinate with teams that publish or consume raw string messages via the messaging service."
+      ],
+      "developer": [
+        "**Sending:** Replace `messagingService.emit(\"myTopic\", \"text\")` with `messagingService.emit(\"myTopic\", Map.of(\"message\", \"text\"))`.",
+        "**Receiving:** Replace `String msg = context.getData()` with `String msg = (String) context.getDataMap().get(\"message\")`.",
+        "Remove `cds.messaging.services.<key>.structured=false` from all configuration files.",
+        "CDS-modelled events are unaffected."
+      ]
+    },
+    "autoFix": {
+      "available": false,
+      "script": null
+    },
+    "supersededBy": null,
+    "references": [
+      "https://cap.cloud.sap/docs/java/migration#removed-unstructured"
+    ],
+    "author": "",
+    "lastUpdated": "2026-03-06"
+  },
+  {
+    "id": "cds9-java-event-hub-removed",
+    "sourceVersion": "8.0",
+    "targetVersion": "9.0",
+    "title": "Java: cds-feature-event-hub Moved to Open-Source",
+    "category": "Breaking Change",
+    "severity": "high",
+    "runtime": "java",
+    "description": "The built-in `cds-feature-event-hub` Maven artifact has been removed from the CAP Java release train. Its successor is the open-source CDS Plugin for SAP Cloud Application Event Hub (https://github.com/cap-java/cds-feature-event-hub), which uses the same Maven coordinates but starts at version 4.0.0.",
+    "actionRequired": true,
+    "applicable": "grep -rn 'cds-feature-event-hub' pom.xml",
+    "affects": ["messaging", "dependencies"],
+    "tags": ["event-hub", "messaging", "java"],
+    "effort": "medium",
+    "affectedFiles": ["pom.xml"],
+    "needsRedeployment": true,
+    "steps": {
+      "admin": [
+        "Confirm that the new open-source plugin version is approved for use in your organisation (open-source license review).",
+        "Ensure deployment pipelines can resolve the new artifact from Maven Central or your internal repository."
+      ],
+      "developer": [
+        "No `pom.xml` coordinate change is needed — group ID and artifact ID are unchanged.",
+        "Ensure version `4.0.0+` of `cds-feature-event-hub` is available in your Maven repository.",
+        "Review the open-source project changelog at https://github.com/cap-java/cds-feature-event-hub for any API differences."
+      ]
+    },
+    "autoFix": {
+      "available": false,
+      "script": null
+    },
+    "supersededBy": null,
+    "references": [
+      "https://cap.cloud.sap/docs/java/migration#removed-feature-cds-feature-event-hub"
+    ],
+    "author": "",
+    "lastUpdated": "2026-03-06"
+  },
+  {
+    "id": "cds9-java-runtime-view-cte",
+    "sourceVersion": "8.0",
+    "targetVersion": "9.0",
+    "title": "Java: Runtime Views Default to CTE Mode",
+    "category": "Behavior Change",
+    "severity": "medium",
+    "runtime": "java",
+    "description": "The `cds.sql.runtimeView.mode` property changed default from `resolve` to `cte`. Runtime views are now translated into SQL Common Table Expressions by default. This may change query plans and performance characteristics.",
+    "actionRequired": true,
+    "applicable": true,
+    "affects": ["database"],
+    "tags": ["database", "java", "performance"],
+    "effort": "medium",
+    "affectedFiles": ["application.properties", "application.yaml"],
+    "needsRedeployment": true,
+    "steps": {
+      "admin": [
+        "After upgrading, monitor application performance and run integration tests against the target database.",
+        "CTE-based queries may perform differently on HANA, PostgreSQL, H2, or SQLite."
+      ],
+      "developer": [
+        "Run integration tests for all queries involving CDS runtime views.",
+        "If the old `resolve` behavior is required, set `cds.sql.runtimeView.mode=resolve` in `application.properties`.",
+        "Refer to https://cap.cloud.sap/docs/java/working-with-cql/query-execution#runtimeviews."
+      ]
+    },
+    "autoFix": {
+      "available": false,
+      "script": null
+    },
+    "supersededBy": null,
+    "references": [
+      "https://cap.cloud.sap/docs/java/migration#adjusted-property-defaults"
+    ],
+    "author": "",
+    "lastUpdated": "2026-03-06"
+  },
+  {
+    "id": "cds9-java-odata-serializer-buffered-removed",
+    "sourceVersion": "8.0",
+    "targetVersion": "9.0",
+    "title": "Java: OData V4 Responses Always Streamed — buffered Option Removed",
+    "category": "Removal",
+    "severity": "medium",
+    "runtime": "java",
+    "description": "The configuration property `cds.odataV4.serializer.buffered` has been removed. OData V4 responses are now always streamed. Streamed responses do not include a `Content-Length` header.",
+    "actionRequired": true,
+    "applicable": "grep -rn 'odataV4.serializer.buffered' src/main/resources",
+    "affects": ["odata", "configuration"],
+    "tags": ["odata", "java"],
+    "effort": "low",
+    "affectedFiles": ["application.properties", "application.yaml"],
+    "needsRedeployment": true,
+    "steps": {
+      "admin": [
+        "Remove the property from all configuration sources.",
+        "Verify that downstream clients and API gateways are compatible with streaming OData V4 responses (no `Content-Length` header)."
+      ],
+      "developer": [
+        "Remove `cds.odataV4.serializer.buffered` from all configuration files.",
+        "Test OData V4 endpoints, especially for large result sets, to confirm streaming works correctly end-to-end."
+      ]
+    },
+    "autoFix": {
+      "available": false,
+      "script": null
+    },
+    "supersededBy": null,
+    "references": [
+      "https://cap.cloud.sap/docs/java/migration#removed-properties"
+    ],
+    "author": "",
+    "lastUpdated": "2026-03-06"
+  },
+  {
+    "id": "cds9-java-multitenant-client-cert-header",
+    "sourceVersion": "8.0",
+    "targetVersion": "9.0",
+    "title": "Java: Subscription Manager clientCertificateHeader Property Moved",
+    "category": "Breaking Change",
+    "severity": "medium",
+    "runtime": "java",
+    "description": "The property `cds.multiTenancy.subscriptionManager.clientCertificateHeader` has been removed. Replace it with `cds.security.authentication.clientCertificateHeader`.",
+    "actionRequired": true,
+    "applicable": "grep -rn 'multiTenancy.subscriptionManager.clientCertificateHeader' src/main/resources",
+    "affects": ["multitenancy", "auth", "configuration"],
+    "tags": ["multitenancy", "security", "java"],
+    "effort": "low",
+    "affectedFiles": ["application.properties", "application.yaml"],
+    "needsRedeployment": true,
+    "steps": {
+      "admin": [
+        "Update all deployment configurations to replace `cds.multiTenancy.subscriptionManager.clientCertificateHeader` with `cds.security.authentication.clientCertificateHeader`."
+      ],
+      "developer": [
+        "Replace `cds.multiTenancy.subscriptionManager.clientCertificateHeader=<value>` with `cds.security.authentication.clientCertificateHeader=<value>` in all configuration files."
+      ]
+    },
+    "autoFix": {
+      "available": false,
+      "script": null
+    },
+    "supersededBy": null,
+    "references": [
+      "https://cap.cloud.sap/docs/java/migration#removed-properties"
+    ],
+    "author": "",
+    "lastUpdated": "2026-03-06"
+  },
+  {
+    "id": "cds9-java-cqnsearchpredicate-removed",
+    "sourceVersion": "8.0",
+    "targetVersion": "9.0",
+    "title": "Java: CqnSearchPredicate Class Removed",
+    "category": "Removal",
+    "severity": "high",
+    "runtime": "java",
+    "description": "The class `com.sap.cds.ql.cqn.CqnSearchPredicate` has been removed. It was deprecated in CAP Java 3.x in favour of `CqnSearchTermPredicate`. Projects using this class will fail to compile.",
+    "actionRequired": true,
+    "applicable": "grep -rn 'CqnSearchPredicate' src/main/java",
+    "affects": ["custom-handlers"],
+    "tags": ["java", "api", "cql"],
+    "effort": "low",
+    "affectedFiles": ["**/*.java"],
+    "needsRedeployment": true,
+    "steps": {
+      "admin": [
+        "No operational action required. Ask developers to fix the compilation error before deployment."
+      ],
+      "developer": [
+        "Replace all usages of `com.sap.cds.ql.cqn.CqnSearchPredicate` with `com.sap.cds.ql.cqn.CqnSearchTermPredicate`.",
+        "Update all imports accordingly.",
+        "The project will fail to compile until this is fixed."
+      ]
+    },
+    "autoFix": {
+      "available": false,
+      "script": null
+    },
+    "supersededBy": null,
+    "references": [
+      "https://cap.cloud.sap/docs/java/migration#removed-java-apis"
+    ],
+    "author": "",
+    "lastUpdated": "2026-03-06"
+  },
+  {
+    "id": "cds9-java-modifier-search-removed",
+    "sourceVersion": "8.0",
+    "targetVersion": "9.0",
+    "title": "Java: Modifier.search(String) Method Removed",
+    "category": "Removal",
+    "severity": "high",
+    "runtime": "java",
+    "description": "The deprecated method `com.sap.cds.ql.cqn.Modifier.search(String term)` has been removed. The replacement is `searchTerm(CqnSearchTermPredicate)`.",
+    "actionRequired": true,
+    "applicable": "grep -rn 'modifier\\.search\\|Modifier\\.search' src/main/java",
+    "affects": ["custom-handlers"],
+    "tags": ["java", "api", "cql"],
+    "effort": "low",
+    "affectedFiles": ["**/*.java"],
+    "needsRedeployment": true,
+    "steps": {
+      "admin": [
+        "No operational action required. Ask developers to fix the compilation error before deployment."
+      ],
+      "developer": [
+        "Replace calls to `modifier.search(\"term\")` with `modifier.searchTerm(CqnSearchTermPredicate)`.",
+        "Construct a `CqnSearchTermPredicate` using the appropriate builder from the `CQL` API.",
+        "The project will fail to compile until this is fixed."
+      ]
+    },
+    "autoFix": {
+      "available": false,
+      "script": null
+    },
+    "supersededBy": null,
+    "references": [
+      "https://cap.cloud.sap/docs/java/migration#removed-java-apis"
+    ],
+    "author": "",
+    "lastUpdated": "2026-03-06"
+  },
+  {
+    "id": "cds9-java-maven-plugin-generate-excludes",
+    "sourceVersion": "8.0",
+    "targetVersion": "9.0",
+    "title": "Java: cds-maven-plugin generate excludes Default Changed",
+    "category": "Behavior Change",
+    "severity": "medium",
+    "runtime": "java",
+    "description": "The `excludes` parameter of the `cds-maven-plugin` `generate` goal changed default from `\"localized.**\"` to `null`. Localized entity POJO classes will now be generated by default. Projects may see new unexpected generated classes.",
+    "actionRequired": true,
+    "applicable": "grep -rn 'cds-maven-plugin' pom.xml",
+    "affects": ["dependencies", "data-model"],
+    "tags": ["java", "maven", "code-generation"],
+    "effort": "low",
+    "affectedFiles": ["pom.xml"],
+    "needsRedeployment": false,
+    "steps": {
+      "admin": [
+        "No operational action required."
+      ],
+      "developer": [
+        "If you do not want POJO classes for localized entities to be generated, explicitly add `<excludes>localized.**</excludes>` to the `generate` goal configuration in `pom.xml`.",
+        "Review generated sources after upgrading to confirm no compilation conflicts with newly generated localized classes."
+      ]
+    },
+    "autoFix": {
+      "available": false,
+      "script": null
+    },
+    "supersededBy": null,
+    "references": [
+      "https://cap.cloud.sap/docs/java/migration#changes-in-goal-generate-of-the-cds-maven-plugin"
+    ],
+    "author": "",
+    "lastUpdated": "2026-03-06"
+  },
+  {
+    "id": "cds9-java-maven-plugin-sharedinterfaces-removed",
+    "sourceVersion": "8.0",
+    "targetVersion": "9.0",
+    "title": "Java: sharedInterfaces and uniqueEventContexts Removed from cds-maven-plugin",
+    "category": "Removal",
+    "severity": "medium",
+    "runtime": "java",
+    "description": "The `sharedInterfaces` and `uniqueEventContexts` properties of the `cds-maven-plugin` `generate` goal have been removed (they were deprecated in CAP Java 3.x with defaults of `true`). Any explicit configuration of these properties must be removed.",
+    "actionRequired": true,
+    "applicable": "grep -rn 'sharedInterfaces\\|uniqueEventContexts' pom.xml",
+    "affects": ["dependencies"],
+    "tags": ["java", "maven", "code-generation"],
+    "effort": "low",
+    "affectedFiles": ["pom.xml"],
+    "needsRedeployment": false,
+    "steps": {
+      "admin": [
+        "No operational action required."
+      ],
+      "developer": [
+        "Remove any `<sharedInterfaces>` and `<uniqueEventContexts>` configuration from the `cds-maven-plugin` `generate` goal in `pom.xml`.",
+        "The behaviour is now always equivalent to `true` for both."
+      ]
+    },
+    "autoFix": {
+      "available": false,
+      "script": null
+    },
+    "supersededBy": null,
+    "references": [
+      "https://cap.cloud.sap/docs/java/migration#changes-in-goal-generate-of-the-cds-maven-plugin"
+    ],
+    "author": "",
+    "lastUpdated": "2026-03-06"
+  }
+]
