@@ -1,6 +1,7 @@
 import { defineConfig } from 'vitepress'
+import { withMermaid } from 'vitepress-plugin-mermaid'
 
-export default defineConfig({
+export default withMermaid(defineConfig({
   title: 'CAP Upgrade Guide',
   description: 'Breaking changes, migration steps, and upgrade tooling for SAP CAP versions.',
   base: '/cap-upgrade-tooling/',
@@ -33,8 +34,13 @@ export default defineConfig({
     },
   },
 
-  vite: {
-    // Allow importing JSON from outside the docs root
-    resolve: {},
+  mermaid: {
+    // use default theme
   },
-})
+
+  vite: {
+    optimizeDeps: {
+      include: ['mermaid'],
+    },
+  },
+}))
