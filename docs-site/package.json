@@ -3,9 +3,10 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "dev":   "vitepress dev docs",
-    "build": "vitepress build docs",
-    "preview": "vitepress preview docs"
+    "dev":     "npm run sync-data && vitepress dev docs",
+    "build":   "npm run sync-data && vitepress build docs",
+    "preview": "vitepress preview docs",
+    "sync-data": "cp ../changes.json docs/public/changes.json"
   },
   "devDependencies": {
     "vitepress": "^1.3.0"
