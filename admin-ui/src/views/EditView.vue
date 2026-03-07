@@ -41,15 +41,6 @@
             <span v-if="errors.title" class="field-error">{{ errors.title }}</span>
           </div>
 
-          <div class="field">
-            <label>Author</label>
-            <input v-model="form.author" type="text" placeholder="Your name or team" />
-          </div>
-
-          <div class="field">
-            <label>Last Updated</label>
-            <input v-model="form.lastUpdated" type="date" />
-          </div>
         </div>
       </section>
 
@@ -105,6 +96,7 @@
               <option value="Deprecation">Deprecation</option>
               <option value="Behavior Change">Behavior Change</option>
               <option value="Removal">Removal</option>
+              <option value="Dependency Update">Dependency Update</option>
             </select>
             <span v-if="errors.category" class="field-error">{{ errors.category }}</span>
           </div>
@@ -321,8 +313,6 @@ function blankForm() {
     autoFix: { available: false, script: null },
     steps: { admin: [], developer: [] },
     references: [],
-    author: '',
-    lastUpdated: new Date().toISOString().split('T')[0],
   }
 }
 
@@ -422,6 +412,7 @@ function save() {
   if (applicableMode.value === 'always') entry.applicable = true
   if (!entry.autoFix.available) entry.autoFix.script = null
   if (!entry.autoFix.script) entry.autoFix.script = null
+  entry.lastUpdated = new Date().toISOString().split('T')[0]
 
   store.save(entry)
   router.push('/')

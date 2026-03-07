@@ -129,7 +129,7 @@ const filterCategory = ref('')
 const filterSeverity = ref('')
 const filterSource = ref('')
 
-const categories = ['Breaking Change', 'Deprecation', 'Behavior Change', 'Removal']
+const categories = ['Breaking Change', 'Deprecation', 'Behavior Change', 'Removal', 'Dependency Update']
 
 const sourceVersions = computed(() => {
   const vs = new Set(store.entries.map(e => e.sourceVersion))

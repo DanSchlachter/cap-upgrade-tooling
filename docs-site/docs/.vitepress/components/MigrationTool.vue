@@ -47,6 +47,7 @@
           <option value="Behavior Change">Behavior Change</option>
           <option value="Deprecation">Deprecation</option>
           <option value="Removal">Removal</option>
+          <option value="Dependency Update">Dependency Update</option>
         </select>
       </div>
 
@@ -948,10 +949,11 @@ function applyPaste() {
   letter-spacing: 0.03em;
 }
 
-.cat-breaking-change { background: #fee2e2; color: #991b1b; }
-.cat-behavior-change { background: #fef3c7; color: #92400e; }
-.cat-deprecation     { background: #ede9fe; color: #5b21b6; }
-.cat-removal         { background: #fce7f3; color: #9d174d; }
+.cat-breaking-change  { background: #fee2e2; color: #991b1b; }
+.cat-behavior-change  { background: #fef3c7; color: #92400e; }
+.cat-deprecation      { background: #ede9fe; color: #5b21b6; }
+.cat-removal          { background: #fce7f3; color: #9d174d; }
+.cat-dependency-update { background: #dbeafe; color: #1e40af; }
 
 .sev-badge-high   { background: #ef4444; color: #fff; }
 .sev-badge-medium { background: #f59e0b; color: #fff; }

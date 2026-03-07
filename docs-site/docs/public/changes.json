@@ -39,41 +39,113 @@
     "lastUpdated": "2026-03-06"
   },
   {
-    "id": "cds9-cds7-end-of-life",
+    "id": "cds9-upgrade-cds",
     "sourceVersion": "8.0",
     "targetVersion": "9.0",
-    "title": "@sap/cds 7 and cds-compiler 4 Reach End of Life",
-    "category": "Removal",
+    "title": "Upgrade @sap/cds to Version 9",
+    "category": "Dependency Update",
     "severity": "high",
     "runtime": "nodejs",
-    "description": "@sap/cds 7, @sap/cds-dk 7, and @sap/cds-compiler 4 are no longer patched. Using @sap/cds 7 or lower now causes CLI errors. Projects must upgrade to @sap/cds 9.",
+    "description": "@sap/cds 7 is end of life and no longer patched. Version 8 continues to receive patches, but upgrading to version 9 is required to access the new features and fixes covered in this guide. Using @sap/cds 7 or lower now causes CLI errors at startup.",
     "actionRequired": true,
-    "applicable": "grep -r '\"@sap/cds\": \"7' package.json",
+    "applicable": "grep -E '\"@sap/cds\":\\s*\"[^9]' package.json",
     "affects": ["dependencies"],
-    "tags": ["eol", "version"],
-    "effort": "high",
+    "tags": ["eol", "upgrade"],
+    "effort": "low",
     "affectedFiles": ["package.json"],
     "needsRedeployment": false,
     "steps": {
       "admin": [
-        "Projects still running cds 7 must be upgraded immediately — no further security or bug fixes will be provided for cds 7.",
-        "Contact the development team to plan the upgrade."
+        "Projects still running @sap/cds 7 must be upgraded immediately — no further security or bug fixes are provided for version 7.",
+        "Contact the development team to plan and execute the upgrade."
       ],
       "developer": [
-        "Run `npm install @sap/cds@9 @sap/cds-dk@9 @sap/cds-compiler@6`.",
-        "Resolve all other breaking changes listed in this guide."
+        "Run `npm install @sap/cds@9`.",
+        "Verify startup succeeds and resolve any other changes listed in this guide."
       ]
     },
     "autoFix": {
       "available": true,
-      "script": "npm install @sap/cds@9 @sap/cds-dk@9 @sap/cds-compiler@6"
+      "script": "npm install @sap/cds@9"
     },
     "supersededBy": null,
     "references": [
       "https://cap.cloud.sap/docs/releases/2025/may25#cap-node-js-v9"
     ],
     "author": "",
-    "lastUpdated": "2026-03-06"
+    "lastUpdated": "2026-03-07"
+  },
+  {
+    "id": "cds9-upgrade-cds-dk",
+    "sourceVersion": "8.0",
+    "targetVersion": "9.0",
+    "title": "Upgrade @sap/cds-dk to Version 9",
+    "category": "Dependency Update",
+    "severity": "medium",
+    "runtime": "nodejs",
+    "description": "@sap/cds-dk (the CAP development kit, providing the `cds` CLI) should be upgraded to version 9 in lock-step with @sap/cds. A mismatched major version between cds and cds-dk can cause CLI errors and unexpected build behaviour.",
+    "actionRequired": true,
+    "applicable": "grep -E '\"@sap/cds-dk\":\\s*\"[^9]' package.json",
+    "affects": ["dependencies"],
+    "tags": ["cli", "upgrade"],
+    "effort": "low",
+    "affectedFiles": ["package.json"],
+    "needsRedeployment": false,
+    "steps": {
+      "admin": [
+        "No direct action required from administrators. Ask the development team to update the dependency."
+      ],
+      "developer": [
+        "Run `npm install @sap/cds-dk@9` (or `npm install -g @sap/cds-dk@9` if installed globally).",
+        "Confirm `cds version` reports version 9."
+      ]
+    },
+    "autoFix": {
+      "available": true,
+      "script": "npm install @sap/cds-dk@9"
+    },
+    "supersededBy": null,
+    "references": [
+      "https://cap.cloud.sap/docs/releases/2025/may25#cap-node-js-v9"
+    ],
+    "author": "",
+    "lastUpdated": "2026-03-07"
+  },
+  {
+    "id": "cds9-upgrade-cds-compiler",
+    "sourceVersion": "8.0",
+    "targetVersion": "9.0",
+    "title": "Upgrade @sap/cds-compiler to Version 6",
+    "category": "Dependency Update",
+    "severity": "medium",
+    "runtime": "nodejs",
+    "description": "@sap/cds-compiler 4 is end of life. @sap/cds 9 ships with cds-compiler 6 as a peer dependency. If cds-compiler is pinned separately in your project, it must be updated to version 6 to avoid version conflicts and compiler errors.",
+    "actionRequired": true,
+    "applicable": "grep -E '\"@sap/cds-compiler\"' package.json",
+    "affects": ["dependencies"],
+    "tags": ["compiler", "upgrade"],
+    "effort": "low",
+    "affectedFiles": ["package.json"],
+    "needsRedeployment": false,
+    "steps": {
+      "admin": [
+        "No direct action required from administrators. Ask the development team to update the dependency."
+      ],
+      "developer": [
+        "If @sap/cds-compiler is explicitly pinned in package.json, run `npm install @sap/cds-compiler@6`.",
+        "If it is only a transitive dependency of @sap/cds, no action is needed — it will be resolved automatically."
+      ]
+    },
+    "autoFix": {
+      "available": true,
+      "script": "npm install @sap/cds-compiler@6"
+    },
+    "supersededBy": null,
+    "references": [
+      "https://cap.cloud.sap/docs/releases/2025/may25#cap-node-js-v9"
+    ],
+    "author": "",
+    "lastUpdated": "2026-03-07"
   },
   {
     "id": "cds9-java-eol",

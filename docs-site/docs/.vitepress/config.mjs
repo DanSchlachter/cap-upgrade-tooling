@@ -3,7 +3,7 @@ import { defineConfig } from 'vitepress'
 export default defineConfig({
   title: 'CAP Upgrade Guide',
   description: 'Breaking changes, migration steps, and upgrade tooling for SAP CAP versions.',
-  base: '/',
+  base: '/cap-upgrade-tooling/',
 
   themeConfig: {
     logo: '/logo.svg',
