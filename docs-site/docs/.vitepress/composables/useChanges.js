@@ -17,7 +17,7 @@ export function useChanges() {
 
     // Only fetch once
     if (_listeners.length === 1) {
-      fetch('/changes.json')
+      fetch(import.meta.env.BASE_URL + 'changes.json')
         .then(r => r.json())
         .then(data => {
           _cache = data
