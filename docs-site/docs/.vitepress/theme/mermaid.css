@@ -1,0 +1,56 @@
+/* Fix Mermaid flowchart rendering in VitePress
+   -----------------------------------------------
+   1. Subgraph titles (cluster labels) render behind node boxes because
+      Mermaid places the label <rect> and <text> early in the SVG stack.
+      Moving the .cluster-label group to the top of its stacking context
+      ensures the title is always readable.
+
+   2. Node <rect> heights are calculated by Mermaid before the browser
+      applies font metrics, so multi-line nodes (using <br/>) can be
+      clipped at the bottom. Adding a small overflow allowance on the
+      foreignObject / text container fixes this.
+*/
+
+/* 1 — subgraph title above all node boxes */
+.vp-doc .mermaid svg .cluster-label {
+  position: relative;
+  z-index: 10;
+}
+
+.vp-doc .mermaid svg g.cluster > rect {
+  /* push the background rect behind everything so the label stays on top */
+  paint-order: stroke fill;
+}
+
+/* Dagre/Mermaid renders subgraph labels as a separate <g class="cluster-label">.
+   In SVG the last element in DOM order is painted on top.
+   We cannot change DOM order via CSS alone, but we CAN ensure the text
+   is not obscured by node rects that overlap the subgraph border area
+   by giving node rects a solid (non-transparent) fill so they paint
+   over the background but the label text—which is rendered last—
+   sits on top via SVG paint order. */
+.vp-doc .mermaid svg .label-container,
+.vp-doc .mermaid svg .node rect,
+.vp-doc .mermaid svg .node circle,
+.vp-doc .mermaid svg .node ellipse,
+.vp-doc .mermaid svg .node polygon,
+.vp-doc .mermaid svg .node path {
+  /* ensure node shapes have an opaque fill so they don't bleed through */
+  fill-opacity: 1;
+}
+
+/* 2 — prevent multi-line node text from clipping at the bottom.
+   Mermaid wraps text in a <foreignObject>; the calculated height
+   sometimes underestimates by ~4-8px when <br/> is used. */
+.vp-doc .mermaid svg foreignObject {
+  overflow: visible;
+}
+
+.vp-doc .mermaid svg .node .label {
+  overflow: visible;
+}
+
+/* Give every diagram a bit of breathing room */
+.vp-doc .mermaid svg {
+  overflow: visible;
+}
