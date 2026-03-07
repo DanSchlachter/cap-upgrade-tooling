@@ -83,26 +83,26 @@
     "category": "Dependency Update",
     "severity": "medium",
     "runtime": "nodejs",
-    "description": "@sap/cds-dk (the CAP development kit, providing the `cds` CLI) should be upgraded to version 9 in lock-step with @sap/cds. A mismatched major version between cds and cds-dk can cause CLI errors and unexpected build behaviour.",
+    "description": "@sap/cds-dk (the CAP development kit, providing the `cds` CLI) should be upgraded to version 9 in lock-step with @sap/cds. It is typically installed globally. A mismatched major version between cds and cds-dk can cause CLI errors and unexpected build behaviour.",
     "actionRequired": true,
-    "applicable": "grep -E '\"@sap/cds-dk\":\\s*\"[^9]' package.json",
+    "applicable": "cds version 2>/dev/null | grep -v '^9\\.'",
     "affects": ["dependencies"],
     "tags": ["cli", "upgrade"],
     "effort": "low",
-    "affectedFiles": ["package.json"],
+    "affectedFiles": [],
     "needsRedeployment": false,
     "steps": {
       "admin": [
-        "No direct action required from administrators. Ask the development team to update the dependency."
+        "No direct action required from administrators. Ask the development team to update the global cds-dk installation."
       ],
       "developer": [
-        "Run `npm install @sap/cds-dk@9` (or `npm install -g @sap/cds-dk@9` if installed globally).",
+        "Run `npm install -g @sap/cds-dk@9`.",
         "Confirm `cds version` reports version 9."
       ]
     },
     "autoFix": {
       "available": true,
-      "script": "npm install @sap/cds-dk@9"
+      "script": "npm install -g @sap/cds-dk@9"
     },
     "supersededBy": null,
     "references": [
@@ -385,7 +385,7 @@
     "runtime": "nodejs",
     "description": "The `hdbcds` deploy format for SAP HANA was deprecated in cds 8 and is now completely removed. Projects still using this format will fail to deploy. The replacement is the `hdbtable` format (default). Not relevant for SAP HANA Cloud.",
     "actionRequired": true,
-    "applicable": "grep -rn 'hdbcds' . --include='*.json'",
+    "applicable": "find . -name '*.hdbcds' | grep -q . || grep -rq '\"deploy-format\":\\s*\"hdbcds\"' . --include='*.json'",
     "affects": ["database"],
     "tags": ["hana", "deploy-format"],
     "effort": "high",
