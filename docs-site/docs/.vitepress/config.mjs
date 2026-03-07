@@ -8,6 +8,7 @@ export default defineConfig({
   themeConfig: {
     logo: '/logo.svg',
     nav: [
+      { text: 'How it Works',   link: '/how-it-works' },
       { text: 'Migration Tool', link: '/migration-tool' },
       { text: 'Admin Guide',    link: '/admin-list' },
       { text: 'Developer Guide',link: '/developer-list' },
@@ -16,6 +17,7 @@ export default defineConfig({
       {
         text: 'Upgrade Tooling',
         items: [
+          { text: 'How it Works',    link: '/how-it-works' },
           { text: 'Migration Tool',  link: '/migration-tool' },
           { text: 'Admin Guide',     link: '/admin-list' },
           { text: 'Developer Guide', link: '/developer-list' },

@@ -1,144 +1,182 @@
-# general objective
+# CAP Comprehensive Upgrade Tooling
 
-  - Breaking changes in CAP should be documented, identifyable and fixable
-  - so that an upgrade (minor or major version) runs smoothly
-  - upgrades are done by a system administrator who doesn't necessarily have developer knowledge (adjusting code or even running npm stuff)
-  - two sets of mitigation steps are required then: one for AI/ a developer -> technical and one for admins -> different language and clearer explanations
-  - or if possible: a script / bash commands that can be run to auto fix
+A two-part toolset that makes SAP CAP version upgrades smooth for both developers and non-technical administrators.
 
+**Live sites**
+- Docs site: https://danschlachter.github.io/cap-upgrade-tooling/
+- Admin UI: https://cap-upgrade-admin-ui.cfapps.eu12.hana.ondemand.com
 
-# Tooling
+---
 
-## Input / Administration
-### List View
-  - Display all changes in a list
-  - edit button to go to the Object edit page
-  - 
+## How It Works
 
- ### Object Edit Page
-  - Create a new entry for a breaking change
+### Maintaining the knowledge base (CAP Developer)
 
-## Output / Users
- - all views are generated from the data source
+A CAP expert discovers a breaking change, opens the Admin UI, creates or edits an entry, downloads the updated `changes.json`, and opens a PR. Once merged to `main`, GitHub Actions rebuilds and deploys the docs site automatically.
 
-### Vitepress page - Migration Tool
- - vue component with filters for versions
+```mermaid
+flowchart TD
+    A([SAP CAP Developer]) --> B
 
-### Vitepress page - Admin List View
- - 
+    subgraph ADMIN ["Admin UI · cap-upgrade-admin-ui.cfapps.eu12.hana.ondemand.com"]
+        B[Browse existing entries\nList View]
+        B --> C{New change\nor edit?}
+        C -->|New| D[Create entry\nEdit Form]
+        C -->|Edit| E[Update entry\nEdit Form]
+        D --> F[Save to in-memory store]
+        E --> F
+    end
 
-### Vitepress page - Developer List View
- - 
+    F --> G[Download changes.json]
 
+    subgraph GH ["GitHub · DanSchlachter/cap-upgrade-tooling"]
+        G --> H[Open Pull Request\nreplace changes.json]
+        H --> I{Review & Merge}
+        I -->|merged to main| J[GitHub Actions\ndeploy-docs.yml]
+        J --> K[npm run build\nVitePress + sync data]
+        K --> L[Deploy to GitHub Pages]
+    end
 
-
-# Data Source
-a simple json stored in the vitepress directory (on github)
-
-
-
-# Flow 
- - CAP developer identifies a breaking change, opens the Input Tooling, goes to the edit page, enters the changes, downloads the json and uploads it to the vitepress repo.
-  - once merged, all the output views will be automatically reading from the updated list
-
-
-# Fields
-
-Each breaking change entry in the JSON data source has the following structure:
-
-```json
-{
-  "id": "cds9-transactional-event-queues",
-  "sourceVersion": "8.0",
-  "targetVersion": "9.0",
-  "title": "Transactional Event Queues Enabled by Default",
-  "category": "Breaking Change",
-  "severity": "high",
-  "runtime": "both",
-  "description": "Event queues are enabled by default. A database deployment is required when migrating to cds9/CAP Java 4 if the persistent outbox was not yet used.",
-  "actionRequired": true,
-  "applicable": "grep -r 'cds.outboxed' .",
-  "affects": ["custom-handlers", "configuration"],
-  "tags": ["messaging", "database"],
-  "effort": "low",
-  "affectedFiles": ["**/*.cds", "**/package.json"],
-  "author": "github-handle",
-  "lastUpdated": "2026-03-06",
-  "steps": {
-    "admin": [
-      "Ask your development team or basis team to run a database deployment before completing the upgrade.",
-      "If event queues are causing issues after the upgrade, ask a developer to disable them by setting `cds.requires.queue = false` in the project configuration."
-    ],
-    "developer": [
-      "Run a database deployment before migrating to cds9/CAP Java 4 if the persistent outbox was not yet used.",
-      "To opt out, add `cds.requires.queue = false` in your project configuration (applies to both Node.js and Java).",
-      "Note that the table name remains `cds.outbox.Messages` for compatibility.",
-      "`cds.outboxed(srv)` is kept as a synonym for the new `cds.queued(srv)`."
-    ]
-  },
-  "needsRedeployment": true,
-  "autoFix": {
-    "available": false,
-    "script": null
-  },
-  "supersededBy": null,
-  "references": [
-    "https://cap.cloud.sap/docs/releases/archive/2025/may25#enabled-by-default",
-    "https://cap.cloud.sap/docs/guides/messaging/task-queues"
-  ]
-}
+    L --> M([Docs site live\ndanschlachter.github.io/cap-upgrade-tooling])
 ```
+
+### Upgrading a CAP project (Developer / Admin)
+
+Project teams open the Migration Tool on the docs site, filter by version and runtime, optionally run a generated scan script against their local project to identify which entries apply, then follow the Admin Guide (plain language) or Developer Guide (technical steps + auto-fix scripts).
+
+```mermaid
+flowchart TD
+    A([Project Developer\nor Admin]) --> B
+
+    subgraph DOCS ["Docs Site · danschlachter.github.io/cap-upgrade-tooling"]
+        B[Open Migration Tool]
+        B --> C[Set filters\nversion · runtime · severity · category]
+        C --> D{Want to scan\nlocal project?}
+
+        D -->|Yes| E[Step 1 — Download scan script\nbash or PowerShell]
+        E --> F[Step 2 — Run script\nin project root]
+        F --> G[Script tests each applicable\ndetection command]
+        G --> H[Script prints matching IDs as JSON]
+        H --> I[Step 3 — Paste output\ninto Migration Tool]
+        I --> J[Apply as filter\nonly matching entries shown]
+
+        D -->|No| J
+
+        J --> K{Which output\ndo you need?}
+        K -->|Plain language| L[Admin Guide]
+        K -->|Technical detail| M[Developer Guide]
+    end
+
+    subgraph PROJECT ["CAP Project"]
+        L --> N[Follow admin steps]
+        M --> O{Auto-fix\navailable?}
+        O -->|Yes| P[Run auto-fix script]
+        O -->|No| Q[Follow manual steps]
+        P --> R[Verify · test · deploy]
+        Q --> R
+        N --> R
+    end
+
+    R --> S([Project successfully upgraded])
+```
+
+---
+
+## Repository Structure
+
+```
+/
+├── changes.json                    Single source of truth — all breaking change entries
+├── manifest.yml                    CF deployment manifest for admin-ui
+├── .github/
+│   └── workflows/
+│       └── deploy-docs.yml         Build + deploy docs site on push to main
+├── admin-ui/                       Vue 3 + Vite SPA — create and edit entries
+│   └── src/
+│       ├── views/
+│       │   ├── ListView.vue        List all entries, search/filter, download changes.json
+│       │   └── EditView.vue        Create / edit a single entry
+│       └── store.js                Reactive in-memory store with dirty tracking
+└── docs-site/                      VitePress site — consume entries
+    └── docs/
+        ├── migration-tool.md       Interactive scan + filter workflow
+        ├── admin-list.md           Plain-language steps for admins
+        ├── developer-list.md       Technical steps + auto-fix scripts for developers
+        ├── how-it-works.md         System diagrams
+        └── .vitepress/
+            └── components/
+                ├── MigrationTool.vue
+                ├── AdminList.vue
+                └── DeveloperList.vue
+```
+
+---
+
+## Data Schema
+
+Each entry in `changes.json`:
 
 | Field | Type | Description |
 |---|---|---|
-| `id` | string | Unique identifier for the entry, used for linking and referencing |
-| `sourceVersion` | string | The version being upgraded *from* |
-| `targetVersion` | string \| null | The version being upgraded *to*. `null` means the change applies to all future versions from `sourceVersion` onwards |
-| `title` | string | Short human-readable title of the breaking change |
-| `category` | string | Top-level classification — see [Categories](#categories) below |
-| `severity` | string | Impact level: `"high"`, `"medium"`, or `"low"` |
-| `runtime` | string | Affected runtime: `"nodejs"`, `"java"`, or `"both"` |
-| `description` | string | Full description of the change and its impact |
-| `actionRequired` | boolean | Whether the user must take action or can safely ignore |
-| `applicable` | string \| `true` | `true` if this entry always applies. Otherwise a shell command (e.g. a `grep`) to run in the user's project — if it returns results, the entry is relevant. Future stretch goal: invoke automatically from the Migration Tool. |
-| `affects` | string[] | Parts of a CAP project impacted — see [Affects](#affects) below |
-| `tags` | string[] | Free-text topics for additional filtering (e.g. `"messaging"`, `"database"`, `"auth"`) |
-| `effort` | string | Estimated effort to apply the fix: `"low"`, `"medium"`, or `"high"`. Distinct from `severity` which describes impact, not work required. |
-| `affectedFiles` | string[] | Glob patterns hinting which files are likely relevant (e.g. `["**/*.cds", "**/package.json"]`). Useful for AI agents scoping their analysis. |
-| `author` | string | GitHub handle of the person who created the entry |
-| `lastUpdated` | string | ISO 8601 date of the last edit to this entry |
-| `steps.admin` | string[] | Plain-language mitigation steps for admins/basis teams (no coding assumed) |
-| `steps.developer` | string[] | Technical mitigation steps for developers and AI agents (markdown supported) |
-| `needsRedeployment` | boolean | Whether a database redeployment is required as part of this change (e.g. new or changed tables like the outbox) |
+| `id` | string | Unique identifier |
+| `sourceVersion` | string | Version upgrading *from* |
+| `targetVersion` | string \| null | Version upgrading *to*. `null` = applies to all future versions |
+| `title` | string | Short human-readable title |
+| `category` | string | `Breaking Change` · `Behavior Change` · `Deprecation` · `Removal` · `Dependency Update` |
+| `severity` | string | `high` · `medium` · `low` |
+| `runtime` | string | `nodejs` · `java` · `both` |
+| `description` | string | Full description of the change and impact |
+| `actionRequired` | boolean | Whether the user must act |
+| `applicable` | string \| `true` | `true` = always applies. Otherwise a shell command to detect relevance in the user's project |
+| `affects` | string[] | Parts of a CAP project impacted (e.g. `data-model`, `configuration`, `auth`) |
+| `tags` | string[] | Free-text topics for filtering |
+| `effort` | string | Estimated fix effort: `low` · `medium` · `high` |
+| `affectedFiles` | string[] | Glob patterns for files likely impacted |
+| `lastUpdated` | string | ISO 8601 date of last edit |
+| `steps.admin` | string[] | Plain-language steps for admins (no coding assumed) |
+| `steps.developer` | string[] | Technical steps for developers (markdown supported) |
+| `needsRedeployment` | boolean | Whether a database redeployment is required |
 | `autoFix.available` | boolean | Whether an automated fix script exists |
-| `autoFix.script` | string \| null | Raw shell command string the user can copy and paste into their project to auto-fix the issue. `null` if not available. Future stretch goal: invoke directly from the Migration Tool UI. |
-| `supersededBy` | string \| null | ID of a newer entry that replaces this one. Used to chain entries across version paths — e.g. a 7→8 entry points to an 8→9 entry so the Migration Tool can traverse the full upgrade path. `null` if this entry is current. |
+| `autoFix.script` | string \| null | Shell command to auto-fix the issue |
+| `supersededBy` | string \| null | ID of a newer entry that replaces this one |
 | `references` | string[] | Links to relevant documentation |
 
-## Categories
+---
 
-Categories are a fixed top-level enum shared across all entries:
+## Development
 
-| Value | Description |
-|---|---|
-| `"Breaking Change"` | Existing behavior is removed or changed in a non-backwards-compatible way |
-| `"Deprecation"` | Feature is still available but will be removed in a future version |
-| `"Behavior Change"` | Default behavior changes without full removal; may require action |
-| `"Removal"` | A previously deprecated feature has been fully removed |
+### Docs site
 
-## Affects
+```bash
+cd docs-site
+npm install
+npm run dev       # syncs changes.json then starts VitePress dev server
+npm run build     # syncs changes.json then builds to docs/.vitepress/dist
+```
 
-`affects` is an array of one or more values from this enum, describing which part(s) of a CAP project are impacted:
+### Admin UI
 
-| Value | Description |
-|---|---|
-| `"data-model"` | Changes to CDS entity definitions, associations, or schema |
-| `"custom-handlers"` | Changes affecting service event handlers written in Node.js or Java |
-| `"configuration"` | Changes to `cds` configuration in `package.json`, `.cdsrc.json`, or `application.yaml` |
-| `"database"` | Changes requiring a database migration or redeployment |
-| `"messaging"` | Changes to event-driven messaging, queues, or outbox behaviour |
-| `"rest"` | Changes to REST protocol adapter or HTTP endpoints |
-| `"odata"` | Changes to OData protocol adapter or metadata |
-| `"auth"` | Changes to authentication or authorization behaviour |
-| `"multitenancy"` | Changes affecting multitenant applications |
-| `"dependencies"` | Changes requiring updates to `package.json` dependencies or Java POM |
+```bash
+cd admin-ui
+npm install
+npm run dev       # Vite dev server with HMR
+npm run build     # production build to admin-ui/dist
+```
+
+---
+
+## Deployment
+
+### Docs site — GitHub Pages
+
+Push to `main`. The workflow `.github/workflows/deploy-docs.yml` triggers automatically when `changes.json` or anything under `docs-site/` changes.
+
+### Admin UI — Cloud Foundry
+
+```bash
+cd admin-ui
+npm run build
+cf push          # uses manifest.yml in root
+```
+
+Target: CF org `cap-enablement-team`, space `ai`, endpoint `eu12`.
