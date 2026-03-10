@@ -1,0 +1,28 @@
+name: Validate changes.json
+
+on:
+  push:
+    paths:
+      - 'changes.json'
+      - 'changes.schema.json'
+      - '.github/workflows/validate-changes.yml'
+  pull_request:
+    paths:
+      - 'changes.json'
+      - 'changes.schema.json'
+      - '.github/workflows/validate-changes.yml'
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Validate changes.json against schema
+        run: npx --yes ajv-cli validate -s changes.schema.json -d changes.json

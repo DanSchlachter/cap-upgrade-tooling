@@ -19,6 +19,12 @@
       </div>
     </div>
 
+    <!-- Draft restored banner -->
+    <div v-if="store.restoredFromDraft" class="draft-banner">
+      <span>&#9998; Unsaved draft restored from your last session.</span>
+      <button class="draft-discard" @click="discardDraft">Discard draft</button>
+    </div>
+
     <!-- Filters -->
     <div class="filters">
       <input
@@ -158,6 +164,12 @@ function slugify(str) {
   return str.toLowerCase().replace(/\s+/g, '-')
 }
 
+function discardDraft() {
+  if (confirm('Discard all unsaved changes and restore the original data?')) {
+    store.resetToSeed()
+  }
+}
+
 function confirmDelete(entry) {
   if (confirm(`Delete "${entry.title}"?\n\nThis cannot be undone.`)) {
     store.delete(entry.id)
@@ -185,6 +197,32 @@ function downloadAll() {
 </script>
 
 <style scoped>
+.draft-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 16px;
+  background: #fffbeb;
+  border: 1px solid #fcd34d;
+  border-radius: 6px;
+  font-size: 13px;
+  color: #92400e;
+}
+
+.draft-discard {
+  padding: 4px 12px;
+  border-radius: 5px;
+  border: 1px solid #fcd34d;
+  background: #fff;
+  color: #92400e;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.draft-discard:hover { background: #fef3c7; }
+
 .list-view { display: flex; flex-direction: column; gap: 16px; }
 
 .toolbar {

@@ -1,0 +1,158 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://github.com/DanSchlachter/cap-upgrade-tooling/changes.schema.json",
+  "title": "CAP Upgrade Changes",
+  "description": "Array of breaking change / migration entries for SAP CAP version upgrades",
+  "type": "array",
+  "items": {
+    "$ref": "#/definitions/ChangeEntry"
+  },
+  "definitions": {
+    "ChangeEntry": {
+      "type": "object",
+      "required": [
+        "id",
+        "sourceVersion",
+        "title",
+        "category",
+        "severity",
+        "runtime",
+        "description",
+        "actionRequired",
+        "applicable",
+        "affects",
+        "tags",
+        "effort",
+        "affectedFiles",
+        "needsRedeployment",
+        "steps",
+        "autoFix",
+        "supersededBy",
+        "references"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier (kebab-case)",
+          "pattern": "^[a-z0-9-]+$"
+        },
+        "sourceVersion": {
+          "type": "string",
+          "description": "Version upgrading from (e.g. '8.0')"
+        },
+        "targetVersion": {
+          "type": ["string", "null"],
+          "description": "Version upgrading to. null means all future versions from sourceVersion."
+        },
+        "title": {
+          "type": "string",
+          "minLength": 1
+        },
+        "category": {
+          "type": "string",
+          "enum": ["Breaking Change", "Behavior Change", "Deprecation", "Removal", "Dependency Update"]
+        },
+        "severity": {
+          "type": "string",
+          "enum": ["high", "medium", "low"]
+        },
+        "runtime": {
+          "type": "string",
+          "enum": ["nodejs", "java", "both"]
+        },
+        "description": {
+          "type": "string",
+          "minLength": 1
+        },
+        "actionRequired": {
+          "type": "boolean"
+        },
+        "applicable": {
+          "oneOf": [
+            { "type": "boolean", "enum": [true] },
+            { "type": "string", "minLength": 1 }
+          ],
+          "description": "true if always applicable, otherwise a shell command to detect relevance"
+        },
+        "affects": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": [
+              "data-model",
+              "custom-handlers",
+              "configuration",
+              "database",
+              "messaging",
+              "rest",
+              "odata",
+              "auth",
+              "multitenancy",
+              "dependencies"
+            ]
+          },
+          "minItems": 1,
+          "uniqueItems": true
+        },
+        "tags": {
+          "type": "array",
+          "items": { "type": "string" },
+          "uniqueItems": true
+        },
+        "effort": {
+          "type": "string",
+          "enum": ["low", "medium", "high"]
+        },
+        "affectedFiles": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "needsRedeployment": {
+          "type": "boolean"
+        },
+        "steps": {
+          "type": "object",
+          "required": ["admin", "developer"],
+          "additionalProperties": false,
+          "properties": {
+            "admin": {
+              "type": "array",
+              "items": { "type": "string" }
+            },
+            "developer": {
+              "type": "array",
+              "items": { "type": "string" }
+            }
+          }
+        },
+        "autoFix": {
+          "type": "object",
+          "required": ["available", "script"],
+          "additionalProperties": false,
+          "properties": {
+            "available": { "type": "boolean" },
+            "script": { "type": ["string", "null"] }
+          }
+        },
+        "supersededBy": {
+          "type": ["string", "null"],
+          "description": "ID of a newer entry that replaces this one"
+        },
+        "author": {
+          "type": "string",
+          "description": "GitHub handle of the entry author (optional)"
+        },
+        "lastUpdated": {
+          "type": "string",
+          "description": "ISO 8601 date of last edit",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+        },
+        "references": {
+          "type": "array",
+          "items": { "type": "string" }
+        }
+      }
+    }
+  }
+}
