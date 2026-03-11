@@ -5,11 +5,13 @@ on:
     paths:
       - 'changes.json'
       - 'changes.schema.json'
+      - 'scripts/validate-changes.js'
       - '.github/workflows/validate-changes.yml'
   pull_request:
     paths:
       - 'changes.json'
       - 'changes.schema.json'
+      - 'scripts/validate-changes.js'
       - '.github/workflows/validate-changes.yml'
 
 jobs:
@@ -23,6 +25,11 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 20
+          cache: npm
+          cache-dependency-path: package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
 
       - name: Validate changes.json against schema
-        run: npx --yes ajv-cli validate -s changes.schema.json -d changes.json
+        run: npm run validate

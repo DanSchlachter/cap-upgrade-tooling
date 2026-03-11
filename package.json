@@ -1,0 +1,24 @@
+{
+  "name": "comprehensive-upgrade-tooling",
+  "version": "1.0.0",
+  "description": "A two-part toolset that makes SAP CAP version upgrades smooth for both developers and non-technical administrators.",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "validate": "node scripts/validate-changes.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/DanSchlachter/cap-upgrade-tooling.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/DanSchlachter/cap-upgrade-tooling/issues"
+  },
+  "homepage": "https://github.com/DanSchlachter/cap-upgrade-tooling#readme",
+  "devDependencies": {
+    "ajv": "^8.18.0"
+  }
+}
